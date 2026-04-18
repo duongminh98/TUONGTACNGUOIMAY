@@ -20,7 +20,8 @@ export function getApiBaseUrl(): string {
 
 /**
  * FastAPI base for `/v1/action-detection/*` (sign-to-text, text-to-sign).
- * Defaults to port 8000 so ML calls work when `NEXT_PUBLIC_API_BASE_URL` points at the Node app.
+ * Default matches `uvicorn` on :8000. If Node already uses :8000, run FastAPI on another port
+ * and set NEXT_PUBLIC_ML_API_BASE_URL (e.g. http://localhost:8001).
  */
 export function getMlApiBaseUrl(): string {
   const baseUrl =
