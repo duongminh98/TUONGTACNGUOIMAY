@@ -30,7 +30,8 @@
     --chart-5: 27 87% 67%;
     --radius: 0.9rem;
     --signlearno-surface: #ffffff;
-    --signlearno-canvas: #ffffff;
+    --signlearno-canvas: #f4f6f8;
+    --signlearno-sidebar: #ecf4e8;
     --signlearno-border: #e5e5e5;
     --signlearno-text-strong: #4b4b4b;
     --signlearno-text-muted: #7b7b7b;
@@ -87,6 +88,7 @@
     /* signlearno dark tokens */
     --signlearno-surface: #161b20;
     --signlearno-canvas: #0f1317;
+    --signlearno-sidebar: #121a1f;
     --signlearno-border: #2b343d;
     --signlearno-text-strong: #e7edf4;
     --signlearno-text-muted: #a7b3bf;

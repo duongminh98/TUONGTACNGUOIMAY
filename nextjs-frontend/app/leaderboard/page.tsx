@@ -70,7 +70,10 @@ export default function LeaderboardPage() {
 
   return (
     <>
-      <main style={{ minHeight: "100vh", paddingTop: 90, background: theme.colors.canvas, fontFamily: theme.fontFamily }}>
+      <main
+        className="min-h-screen pt-[70px] md:pt-0"
+        style={{ background: theme.colors.canvas, fontFamily: theme.fontFamily }}
+      >
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "8px 24px 80px" }}>
           {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading leaderboard...</p> : null}
           {error ? <p style={{ ...signlearnoText, color: theme.colors.red }}>{error}</p> : null}

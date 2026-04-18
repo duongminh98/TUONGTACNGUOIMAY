@@ -39,7 +39,10 @@ export default function UsersPage() {
 
   return (
     <>
-      <main style={{ minHeight: "100vh", background: theme.colors.canvas, paddingTop: 90, fontFamily: theme.fontFamily }}>
+      <main
+        className="min-h-screen pt-[70px] md:pt-0"
+        style={{ background: theme.colors.canvas, fontFamily: theme.fontFamily }}
+      >
         <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px 64px" }}>
           <h1 style={{ ...signlearnoText, fontSize: 30, fontWeight: 900, color: theme.colors.textStrong, margin: "0 0 8px" }}>
             User Management

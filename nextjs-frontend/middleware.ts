@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
 
   // Redirect to home if accessing login with token
   if (pathname === "/login" && token) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();

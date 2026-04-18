@@ -18,6 +18,18 @@ export function getApiBaseUrl(): string {
   return baseUrl.replace(/\/+$/, "");
 }
 
+/**
+ * FastAPI base for `/v1/action-detection/*` (sign-to-text, text-to-sign).
+ * Defaults to port 8000 so ML calls work when `NEXT_PUBLIC_API_BASE_URL` points at the Node app.
+ */
+export function getMlApiBaseUrl(): string {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_ML_API_BASE_URL ||
+    process.env.ML_API_BASE_URL ||
+    "http://localhost:8000";
+  return baseUrl.replace(/\/+$/, "");
+}
+
 // Initialize on module load
 initializeApiClient();
 

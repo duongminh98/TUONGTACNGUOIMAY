@@ -32,25 +32,27 @@ export function ThemeToggle() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        width: 38,
-        height: 38,
-        borderRadius: 10,
+        width: 40,
+        height: 40,
+        borderRadius: 999,
         border: "none",
-        background: theme.colors.surface,
+        background: "transparent",
         cursor: "pointer",
         color: theme.colors.textMuted,
-        transition: "background 140ms",
+        transition: "background-color 160ms ease, color 160ms ease",
         flexShrink: 0,
       }}
       onMouseEnter={(e) => {
         const icon = e.currentTarget.querySelector<HTMLElement>("[data-theme-icon]");
         if (icon) icon.style.transform = "translateY(-2px)";
         e.currentTarget.style.color = theme.colors.green;
+        e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--signlearno-green) 12%, transparent)";
       }}
       onMouseLeave={(e) => {
         const icon = e.currentTarget.querySelector<HTMLElement>("[data-theme-icon]");
         if (icon) icon.style.transform = "none";
         e.currentTarget.style.color = theme.colors.textMuted;
+        e.currentTarget.style.backgroundColor = "transparent";
       }}
     >
       <span

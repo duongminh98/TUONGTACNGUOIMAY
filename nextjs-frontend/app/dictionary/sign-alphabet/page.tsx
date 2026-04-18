@@ -237,13 +237,7 @@ export default function SignAlphabetPage() {
 
   return (
     <>
-      <main
-        style={{
-          minHeight: "100vh",
-          paddingTop: 88,
-          background: theme.colors.surface,
-        }}
-      >
+      <main className="min-h-screen pt-[70px] md:pt-0" style={{ background: theme.colors.surface }}>
         <div className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
           <section className="rounded-3xl border-2 bg-white p-5 sm:p-6" style={{ borderColor: duolingo.line }}>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

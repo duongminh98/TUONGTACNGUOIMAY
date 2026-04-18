@@ -6,7 +6,7 @@ import { signlearnoTheme as theme } from "@/components/signlearno/theme";
 export default function LearnLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <main style={{ minHeight: "100vh", paddingTop: "70px", background: theme.colors.surface }}>
+      <main className="min-h-screen pt-[70px] md:pt-0" style={{ background: theme.colors.canvas }}>
         {children}
       </main>
       <Footer />

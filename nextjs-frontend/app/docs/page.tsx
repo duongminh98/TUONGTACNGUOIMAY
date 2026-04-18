@@ -57,7 +57,7 @@ export default function DocsPage() {
 
   return (
     <>
-      <main style={{ minHeight: "100vh", paddingTop: "70px", background: theme.colors.canvas }}>
+      <main className="min-h-screen pt-[70px] md:pt-0" style={{ background: theme.colors.canvas }}>
         {/* Hero Section */}
         <div
           style={{

@@ -39,13 +39,7 @@ export default function DictionaryPage() {
 
   return (
     <>
-      <main
-        style={{
-          minHeight: "100vh",
-          paddingTop: 88,
-          background: theme.colors.surface,
-        }}
-      >
+      <main className="min-h-screen pt-[70px] md:pt-0" style={{ background: theme.colors.surface }}>
         <div className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
           <section
             className="rounded-3xl border-2 p-6 sm:p-8"

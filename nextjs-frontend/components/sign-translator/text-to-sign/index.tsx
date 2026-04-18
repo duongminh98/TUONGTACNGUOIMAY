@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Clock3, SendHorizontal } from "lucide-react";
 import { signlearnoTheme as theme, signlearnoText, signlearnoUpperLabel } from "@/components/signlearno/theme";
-import { TOOL_WIDTH, TEXT_TO_SIGN_PLACEHOLDER } from "../constants";
+import { TOOL_WIDTH, TEXT_TO_SIGN_PLACEHOLDER, TRANSLATOR_TOOL_GRID_HEIGHT } from "../constants";
 import { translateTextToSign } from "@/lib/api/sign-translation";
 import type { TextToSignResult } from "@/lib/types";
 
@@ -44,8 +44,16 @@ export function TextToSignExperience() {
         return next.slice(0, 6);
       });
     } catch (nextError) {
-      const message =
+      let message =
         nextError instanceof Error ? nextError.message : "Unable to reach the translation API.";
+      try {
+        const parsed = JSON.parse(message) as { message?: string };
+        if (parsed?.message && typeof parsed.message === "string") {
+          message = parsed.message;
+        }
+      } catch {
+        /* plain text error */
+      }
       setError(message);
       setTranslation(null);
     } finally {
@@ -84,11 +92,11 @@ export function TextToSignExperience() {
           boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          height: 600,
+          height: TRANSLATOR_TOOL_GRID_HEIGHT,
           alignItems: "stretch",
         }}
       >
-        <section style={{ padding: 0, height: 600, boxSizing: "border-box", position: "relative", overflow: "hidden" }}>
+        <section style={{ padding: 0, height: TRANSLATOR_TOOL_GRID_HEIGHT, boxSizing: "border-box", position: "relative", overflow: "hidden" }}>
           <textarea
             value={inputText}
             onChange={(event) => setInputText(event.target.value)}
@@ -181,7 +189,7 @@ export function TextToSignExperience() {
           </div>
         </section>
 
-        <section style={{ padding: 0, height: 600, boxSizing: "border-box", background: videoSurfaceBg, color: theme.colors.textStrong, display: "flex", overflow: "hidden" }}>
+        <section style={{ padding: 0, height: TRANSLATOR_TOOL_GRID_HEIGHT, boxSizing: "border-box", background: videoSurfaceBg, color: theme.colors.textStrong, display: "flex", overflow: "hidden" }}>
           <div style={{ position: "relative", flex: 1, background: videoSurfaceBg, overflow: "hidden", display: "flex", flexDirection: "column" }}>
             <div style={{ flex: 1, minHeight: 0, width: "100%", overflow: "hidden", position: "relative" }}>
               <div

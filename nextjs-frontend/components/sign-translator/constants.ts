@@ -83,6 +83,8 @@ export const RIGHT_RAIL_WIDTH = 380;
 export const LAYOUT_GAP = 36;
 export const PATH_BOTTOM_SPACE = 116;
 export const TOOL_WIDTH = MAIN_WIDTH + RIGHT_RAIL_WIDTH + LAYOUT_GAP;
+/** Chiều cao khung hai cột Sign↔Text / Text↔Sign (camera + output). */
+export const TRANSLATOR_TOOL_GRID_HEIGHT = 680;
 export const pathCanvasStyle = { position: "relative" as const, width: MAIN_WIDTH };
 
 export const DETECTED_LABEL_COPY: Record<string, string> = {

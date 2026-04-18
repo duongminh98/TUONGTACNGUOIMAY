@@ -6,6 +6,7 @@ export const signlearnoTheme = {
   colors: {
     surface: "var(--signlearno-surface)",
     canvas: "var(--signlearno-canvas)",
+    sidebar: "var(--signlearno-sidebar)",
     border: "var(--signlearno-border)",
     textStrong: "var(--signlearno-text-strong)",
     textMuted: "var(--signlearno-text-muted)",

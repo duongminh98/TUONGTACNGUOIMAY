@@ -131,15 +131,13 @@ export default function DashboardPage() {
 
   return (
     <>
-      <main style={{ minHeight: "100vh", background: theme.colors.surface, paddingTop: "70px" }}>
+      <main className="min-h-screen pt-[70px] md:pt-0" style={{ background: theme.colors.surface }}>
         <div
+          className="flex min-h-[calc(100vh-70px)] flex-col md:min-h-screen"
           style={{
             maxWidth: "100%",
             margin: "0",
             padding: "20px 24px 24px",
-            minHeight: "calc(100vh - 70px)",
-            display: "flex",
-            flexDirection: "column",
           }}
         >
           {loading ? (

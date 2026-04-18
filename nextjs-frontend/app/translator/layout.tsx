@@ -6,7 +6,10 @@ import { signlearnoTheme as theme } from "@/components/signlearno/theme";
 export default function TranslatorLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <main style={{ minHeight: "100vh", paddingTop: "70px", background: theme.colors.surface }}>
+      <main
+        className="min-h-screen pb-10 pt-[70px] md:pb-14 md:pt-0"
+        style={{ background: theme.colors.canvas }}
+      >
         {children}
       </main>
       <Footer />

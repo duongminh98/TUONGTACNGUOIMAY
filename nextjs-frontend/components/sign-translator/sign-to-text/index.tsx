@@ -8,7 +8,7 @@ import { drawDetectedLabel, drawHolisticLandmarks, drawProbabilityBars, type Hol
 import { predictSignToText } from "@/lib/api/sign-translation";
 import { formatSession, describeCameraError, getCameraStream, humanizeDetectedLabel, resolveHolisticConstructor } from "../utils";
 import { ToolStatCard } from "../ui/shared";
-import { TOOL_WIDTH } from "../constants";
+import { TOOL_WIDTH, TRANSLATOR_TOOL_GRID_HEIGHT } from "../constants";
 
 export function SignToTextExperience() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -313,11 +313,11 @@ export function SignToTextExperience() {
           boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          height: 600,
+          height: TRANSLATOR_TOOL_GRID_HEIGHT,
           alignItems: "stretch",
         }}
       >
-        <section style={{ padding: 0, height: 600, boxSizing: "border-box", position: "relative", overflow: "hidden" }}>
+        <section style={{ padding: 0, height: TRANSLATOR_TOOL_GRID_HEIGHT, boxSizing: "border-box", position: "relative", overflow: "hidden" }}>
           <div
             style={{
               position: "absolute",
@@ -389,7 +389,7 @@ export function SignToTextExperience() {
           </div>
         </section>
 
-        <section style={{ padding: 0, height: 600, boxSizing: "border-box", background: "linear-gradient(180deg, var(--signlearno-soft-gradient-start) 0%, var(--signlearno-soft-gradient-end) 100%)", color: theme.colors.textStrong, display: "flex", overflow: "hidden" }}>
+        <section style={{ padding: 0, height: TRANSLATOR_TOOL_GRID_HEIGHT, boxSizing: "border-box", background: "linear-gradient(180deg, var(--signlearno-soft-gradient-start) 0%, var(--signlearno-soft-gradient-end) 100%)", color: theme.colors.textStrong, display: "flex", overflow: "hidden" }}>
           <div style={{ position: "relative", flex: 1, background: "linear-gradient(180deg, var(--signlearno-soft-gradient-start) 0%, var(--signlearno-soft-gradient-end) 100%)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "24px 24px 12px", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ color: theme.colors.green, ...signlearnoUpperLabel }}>

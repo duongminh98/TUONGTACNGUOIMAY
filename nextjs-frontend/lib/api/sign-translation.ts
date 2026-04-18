@@ -1,12 +1,12 @@
 import { API_ENDPOINTS } from "@/lib/constants";
-import { getApiBaseUrl } from "./client";
+import { getMlApiBaseUrl } from "./client";
 import type { SignToTextResponse, TextToSignResponse } from "@/lib/types";
 
 /**
  * Make a JSON request to the API
  */
 async function requestJson<T>(path: string, init: RequestInit): Promise<T> {
-  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+  const response = await fetch(`${getMlApiBaseUrl()}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",

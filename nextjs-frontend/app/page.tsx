@@ -45,7 +45,7 @@ export default function LandingPage() {
 
   return (
     <>
-      <main style={{ minHeight: "100vh", paddingTop: "70px" }}>
+      <main className="min-h-screen">
         {/* Hero Section */}
         <section
           style={{

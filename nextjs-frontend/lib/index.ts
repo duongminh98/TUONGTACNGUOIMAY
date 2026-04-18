@@ -1,7 +1,13 @@
 /* lib/ directory barrel file for convenient imports */
 
 /* API and Client Configuration */
-export { getApiBaseUrl, initializeApiClient, predictSignToText, translateTextToSign } from "./api";
+export {
+  getApiBaseUrl,
+  getMlApiBaseUrl,
+  initializeApiClient,
+  predictSignToText,
+  translateTextToSign,
+} from "./api";
 
 /* Utilities */
 export { cn } from "./utils/cn";
