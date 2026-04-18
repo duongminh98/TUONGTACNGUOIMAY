@@ -27,7 +27,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 COPY . .
 
 # Expose the application port
-EXPOSE 8000
+EXPOSE 8001
 
 # Command to run the application
 CMD ["sh", "./start.sh"]

@@ -117,7 +117,7 @@ Start the Next.js development server container:
    make docker-start-frontend
    ```
 
-- **Backend**: Access the API at `http://localhost:8000`.
+- **Backend (FastAPI)**: Access the API at `http://localhost:8001`.
 - **Frontend**: Access the web application at `http://localhost:3000`.
 
 ## Important Considerations

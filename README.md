@@ -26,7 +26,8 @@ npm run dev
 3. Mở trình duyệt:
 
 - Frontend: http://localhost:3000  
-- API: http://localhost:8000  
+- FastAPI (ML / action-detection): http://localhost:8001  
+- Node API (auth, …): http://localhost:8000 — khi chạy `nodejs-backend`  
 
 ## Lỗi thường gặp
 

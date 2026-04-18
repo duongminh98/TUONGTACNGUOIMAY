@@ -19,15 +19,13 @@ export function getApiBaseUrl(): string {
 }
 
 /**
- * FastAPI base for `/v1/action-detection/*` (sign-to-text, text-to-sign).
- * Default matches `uvicorn` on :8000. If Node already uses :8000, run FastAPI on another port
- * and set NEXT_PUBLIC_ML_API_BASE_URL (e.g. http://localhost:8001).
+ * FastAPI: `/v1/action-detection/*` (sign-to-text, text-to-sign). Default uvicorn :8001.
  */
 export function getMlApiBaseUrl(): string {
   const baseUrl =
     process.env.NEXT_PUBLIC_ML_API_BASE_URL ||
     process.env.ML_API_BASE_URL ||
-    "http://localhost:8000";
+    "http://localhost:8001";
   return baseUrl.replace(/\/+$/, "");
 }
 
