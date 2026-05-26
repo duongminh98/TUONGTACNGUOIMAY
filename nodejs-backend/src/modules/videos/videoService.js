@@ -1,106 +1,61 @@
-const cloudinary = require('cloudinary').v2;
 const logger = require('../../logger');
+const Translator = require('../translator/Translator');
 
-const MAX_SCAN_ITEMS = 500;
+const NUMBER_WORD_GROUPS = new Map([
+  ['one', '1'],
+  ['two', '2'],
+  ['three', '3'],
+  ['four', '4'],
+  ['five', '5'],
+  ['six', '6'],
+  ['seven', '7'],
+  ['eight', '8'],
+  ['nine', '9'],
+  ['ten', '10'],
+  ['eleven', '11'],
+  ['twelve', '12'],
+  ['thirteen', '13'],
+  ['fourteen', '14'],
+  ['fifteen', '15'],
+  ['sixteen', '16'],
+  ['seventeen', '17'],
+  ['eighteen', '18'],
+  ['nineteen', '19'],
+  ['twenty', '20'],
+]);
 
 class VideoService {
-  constructor() {
-    this.isConfigured = false;
+  normalizeVideoTitle(value, fallback = '') {
+    const title = String(value || '').trim();
+    if (!title) return String(fallback || '').trim();
+
+    return title
+      .replace(/^signvideo:\s*/i, '')
+      .replace(/^sign_video:\s*/i, '')
+      .replace(/^video:\s*/i, '')
+      .replace(/^[:_\s]+/, '')
+      .trim();
   }
 
-  configureCloudinary() {
-    if (this.isConfigured) return;
-
-    const {
-      CLOUDINARY_URL,
-      CLOUDINARY_CLOUD_NAME,
-      CLOUDINARY_API_KEY,
-      CLOUDINARY_API_SECRET,
-    } = process.env;
-
-    if (CLOUDINARY_URL) {
-      cloudinary.config(CLOUDINARY_URL);
-      this.isConfigured = true;
-      return;
-    }
-
-    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-      throw new Error('Missing Cloudinary configuration: provide CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME/CLOUDINARY_API_KEY/CLOUDINARY_API_SECRET');
-    }
-
-    cloudinary.config({
-      cloud_name: CLOUDINARY_CLOUD_NAME,
-      api_key: CLOUDINARY_API_KEY,
-      api_secret: CLOUDINARY_API_SECRET,
-      secure: true,
-    });
-
-    this.isConfigured = true;
+  inferLetterGroup(title) {
+    const candidate = this.normalizeVideoTitle(title).toLowerCase();
+    const match = candidate.match(/[a-z]/);
+    return match ? match[0] : null;
   }
 
-  async fetchResourcesByPrefix(prefix, resourceType = 'video') {
-    this.configureCloudinary();
-
-    const resources = [];
-    let nextCursor;
-
-    do {
-      const response = await cloudinary.api.resources({
-        resource_type: resourceType,
-        type: 'upload',
-        prefix,
-        max_results: 100,
-        next_cursor: nextCursor,
-      });
-
-      resources.push(...(response.resources || []));
-      nextCursor = response.next_cursor;
-    } while (nextCursor);
-
-    return resources;
-  }
-
-  async fetchAllUploadedVideos(limit = MAX_SCAN_ITEMS) {
-    this.configureCloudinary();
-
-    const resources = [];
-    let nextCursor;
-
-    do {
-      const response = await cloudinary.api.resources({
-        resource_type: 'video',
-        type: 'upload',
-        max_results: 100,
-        next_cursor: nextCursor,
-      });
-
-      resources.push(...(response.resources || []));
-      nextCursor = response.next_cursor;
-    } while (nextCursor && resources.length < limit);
-
-    return resources.slice(0, limit);
-  }
-
-  getDisplayName(resource) {
-    const publicId = String(resource.public_id || '').trim();
-    const leafName = String(publicId.split('/').pop() || publicId).trim();
-    const rawName = String(resource.display_name || leafName).trim();
-
-    // Remove Cloudinary-style random suffix segment after the last underscore.
-    if (!rawName.includes('_')) {
-      return rawName;
-    }
-
-    return rawName.replace(/_[^_]*$/, '');
-  }
-
-  inferNumberGroup(resource) {
-    const candidate = this.getDisplayName(resource).toLowerCase();
-    const numberAtStart = candidate.match(/^(\d{1,2})/);
+  inferNumberGroup(title) {
+    const candidate = this.normalizeVideoTitle(title).toLowerCase();
+    const numberAtStart = candidate.match(/^(\d{1,2})\b/);
     if (numberAtStart) {
       const parsed = parseInt(numberAtStart[1], 10);
       if (parsed >= 1 && parsed <= 20) {
         return String(parsed);
+      }
+    }
+
+    for (const [word, group] of NUMBER_WORD_GROUPS.entries()) {
+      if (candidate.startsWith(word)) {
+        return group;
       }
     }
 
@@ -113,33 +68,55 @@ class VideoService {
     return String(parsed);
   }
 
-  inferLetterGroup(resource) {
-    const candidate = this.getDisplayName(resource).toLowerCase();
-    const letter = candidate.match(/[a-z]/);
-    return letter ? letter[0] : null;
-  }
-
-  normalizeResource(resource, group) {
-    const publicId = String(resource.public_id || '').trim();
-    const displayName = this.getDisplayName(resource);
+  normalizeResource(resource, group, index = 0, documentId = '') {
+    const title = this.normalizeVideoTitle(resource?.title, group);
+    const url = String(resource?.url || '').trim();
 
     return {
-      id: publicId,
-      url: resource.secure_url,
+      id: String(resource?._id || `${documentId}:${group}:${index}`),
+      url,
       group: String(group),
-      name: displayName,
+      name: title,
     };
+  }
+
+  async fetchDictionaryVideos() {
+    const docs = await Translator.find({})
+      .select('title videos')
+      .lean();
+
+    const videos = [];
+
+    docs.forEach((doc) => {
+      if (!Array.isArray(doc.videos)) return;
+
+      doc.videos.forEach((video, index) => {
+        const title = this.normalizeVideoTitle(video?.title, doc.title);
+        const url = String(video?.url || '').trim();
+        if (!title || !url) return;
+
+        videos.push({
+          _id: video?._id,
+          title,
+          url,
+          documentId: String(doc._id || ''),
+          index,
+        });
+      });
+    });
+
+    return videos;
   }
 
   async getNumbersVideos() {
     try {
-      const resources = await this.fetchAllUploadedVideos();
+      const videos = await this.fetchDictionaryVideos();
 
-      return resources
+      return videos
         .map((resource) => {
-          const group = this.inferNumberGroup(resource);
+          const group = this.inferNumberGroup(resource.title);
           if (!group) return null;
-          return this.normalizeResource(resource, group);
+          return this.normalizeResource(resource, group, resource.index, resource.documentId);
         })
         .filter(Boolean)
         .sort((left, right) => {
@@ -180,13 +157,13 @@ class VideoService {
         throw validationError;
       }
 
-      const resources = await this.fetchAllUploadedVideos();
+      const videos = await this.fetchDictionaryVideos();
 
-      return resources
+      return videos
         .map((resource) => {
-          const group = this.inferLetterGroup(resource);
+          const group = this.inferLetterGroup(resource.title);
           if (group !== normalizedLetter) return null;
-          return this.normalizeResource(resource, normalizedLetter);
+          return this.normalizeResource(resource, normalizedLetter, resource.index, resource.documentId);
         })
         .filter(Boolean)
         .sort((left, right) => left.name.localeCompare(right.name));
@@ -198,40 +175,25 @@ class VideoService {
 
   async getDebugResources(prefix = '', limit = 20) {
     try {
-      const normalizedPrefix = String(prefix || '').trim();
+      const normalizedPrefix = String(prefix || '').trim().toLowerCase();
       const normalizedLimit = Math.max(Math.min(parseInt(limit, 10) || 20, 100), 1);
+      const videos = await this.fetchDictionaryVideos();
 
-      this.configureCloudinary();
-
-      const [video, raw] = await Promise.all([
-        cloudinary.api.resources({
-          resource_type: 'video',
-          type: 'upload',
-          prefix: normalizedPrefix || undefined,
-          max_results: normalizedLimit,
-        }),
-        cloudinary.api.resources({
-          resource_type: 'raw',
-          type: 'upload',
-          prefix: normalizedPrefix || undefined,
-          max_results: normalizedLimit,
-        }),
-      ]);
-
-      const toPreview = (resource) => ({
-        publicId: resource.public_id,
-        resourceType: resource.resource_type,
-        format: resource.format,
-        secureUrl: resource.secure_url,
-      });
+      const filtered = normalizedPrefix
+        ? videos.filter((item) => {
+            const title = String(item.name || '').toLowerCase();
+            const group = String(item.group || '').toLowerCase();
+            return title.includes(normalizedPrefix) || group.startsWith(normalizedPrefix);
+          })
+        : videos;
 
       return {
+        source: 'mongodb',
         prefix: normalizedPrefix,
         limit: normalizedLimit,
-        videoCount: Array.isArray(video.resources) ? video.resources.length : 0,
-        rawCount: Array.isArray(raw.resources) ? raw.resources.length : 0,
-        video: Array.isArray(video.resources) ? video.resources.map(toPreview) : [],
-        raw: Array.isArray(raw.resources) ? raw.resources.map(toPreview) : [],
+        totalVideos: videos.length,
+        matchedVideos: filtered.length,
+        video: filtered.slice(0, normalizedLimit),
       };
     } catch (error) {
       logger.error('Get debug resources error:', error.message);

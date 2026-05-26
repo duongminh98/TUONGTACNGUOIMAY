@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const learnController = require('../modules/learn/learnController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const { adminMiddleware } = require('../middlewares/authMiddleware');
 
 /**
  * @route   GET /api/learn/lessons
@@ -20,6 +21,15 @@ router.get('/lessons', (req, res, next) =>
  */
 router.get('/lessons/:lessonId', (req, res, next) =>
   learnController.getLessonById(req, res, next)
+);
+
+/**
+ * @route   POST /api/learn/lessons
+ * @desc    Create lesson/practice
+ * @access  Private Admin
+ */
+router.post('/lessons', authMiddleware, adminMiddleware, (req, res, next) =>
+  learnController.createLesson(req, res, next)
 );
 
 /**

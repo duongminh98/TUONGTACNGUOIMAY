@@ -37,6 +37,26 @@ export type Lesson = {
   }>;
 };
 
+export type CreateLessonInput = {
+  title: string;
+  content: string;
+  type: "lesson" | "practice";
+  scoreReward?: number;
+  order?: number;
+  resources?: Array<{
+    title: string;
+    url: string;
+  }>;
+  practiceQuestions?: Array<{
+    url: string;
+    A: string;
+    B: string;
+    C: string;
+    D: string;
+    correct: "A" | "B" | "C" | "D";
+  }>;
+};
+
 export type LearningHistoryItem = {
   _id: string;
   userId: string;
@@ -119,6 +139,7 @@ export type SignVideoItem = {
 };
 
 const TOKEN_STORAGE_KEY = "auth_token";
+const AUTH_STATE_CHANGED_EVENT = "auth-state-changed";
 const PROFILE_CACHE_STORAGE_KEY = "auth_profile_cache";
 const PROFILE_CACHE_TTL_MS = 5 * 60 * 1000;
 const SIGN_VIDEO_CACHE_STORAGE_KEY = "sign_video_cache_v1";
@@ -249,12 +270,14 @@ export function setStoredToken(token: string): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
   clearProfileCache();
+  window.dispatchEvent(new Event(AUTH_STATE_CHANGED_EVENT));
 }
 
 export function clearStoredToken(): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(TOKEN_STORAGE_KEY);
   clearProfileCache();
+  window.dispatchEvent(new Event(AUTH_STATE_CHANGED_EVENT));
 }
 
 async function requestApi<T>(
@@ -332,6 +355,11 @@ export async function getUsers(): Promise<AuthUser[]> {
   return response.data;
 }
 
+export async function deleteUser(userId: string): Promise<AuthUser> {
+  const response = await requestApi<AuthUser>(`/api/auth/users/${encodeURIComponent(userId)}`, { method: "DELETE" }, { auth: true });
+  return response.data;
+}
+
 export async function getLessons(type?: "lesson" | "practice"): Promise<Lesson[]> {
   const query = type ? `?type=${type}` : "";
   const response = await requestApi<Lesson[]>(`/api/learn/lessons${query}`, { method: "GET" });
@@ -340,6 +368,18 @@ export async function getLessons(type?: "lesson" | "practice"): Promise<Lesson[]
 
 export async function getLessonById(lessonId: string): Promise<Lesson> {
   const response = await requestApi<Lesson>(`/api/learn/lessons/${lessonId}`, { method: "GET" });
+  return response.data;
+}
+
+export async function createLesson(input: CreateLessonInput): Promise<Lesson> {
+  const response = await requestApi<Lesson>(
+    "/api/learn/lessons",
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+    { auth: true },
+  );
   return response.data;
 }
 

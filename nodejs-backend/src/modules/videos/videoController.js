@@ -9,7 +9,7 @@ class VideoController {
 
       res.status(200).json({
         success: true,
-        message: 'Cloudinary resources retrieved successfully',
+        message: 'MongoDB dictionary resources retrieved successfully',
         data,
       });
     } catch (error) {

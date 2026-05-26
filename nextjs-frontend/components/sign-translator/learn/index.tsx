@@ -4,6 +4,39 @@ import { XpChestIllustration } from "@/components/signlearno/icons";
 import type { Unit } from "../types";
 import { RIGHT_RAIL_WIDTH } from "../constants";
 
+function isDirectVideoUrl(url: string): boolean {
+  const normalized = String(url || "").trim().toLowerCase();
+  return /\.(mp4|webm|ogg)(\?|#|$)/.test(normalized) || normalized.includes("/video/upload/");
+}
+
+function getEmbedUrl(url: string): string {
+  let embedUrl = String(url || "").trim();
+
+  try {
+    const parsed = new URL(embedUrl);
+    const hostname = parsed.hostname.replace(/^www\./, "");
+    if (hostname === "youtube.com" || hostname === "m.youtube.com") {
+      const watchId = parsed.searchParams.get("v");
+      const shortsId = parsed.pathname.startsWith("/shorts/") ? parsed.pathname.split("/")[2] : "";
+      const videoId = watchId || shortsId;
+      if (videoId) {
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+    if (hostname === "youtu.be") {
+      const videoId = parsed.pathname.split("/").filter(Boolean)[0];
+      if (videoId) {
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+  } catch {
+    embedUrl = url;
+  }
+
+  const separator = embedUrl.includes("?") ? "&" : "?";
+  return `${embedUrl}${separator}autoplay=1&mute=1&rel=0&modestbranding=1`;
+}
+
 export function UnitsGrid({ units, onSelect }: { units: Unit[]; onSelect: (unit: Unit) => void }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
@@ -180,23 +213,41 @@ export function FlashcardView({
             position: "relative",
           }}
         >
-          <video
-            key={card.videoUrl}
-            autoPlay
-            muted
-            loop
-            controls
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          >
-            <source src={card.videoUrl} type="video/mp4" />
-          </video>
+          {isDirectVideoUrl(card.videoUrl) ? (
+            <video
+              key={card.videoUrl}
+              autoPlay
+              muted
+              loop
+              controls
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            >
+              <source src={card.videoUrl} />
+            </video>
+          ) : (
+            <iframe
+              key={card.videoUrl}
+              src={getEmbedUrl(card.videoUrl)}
+              title={card.word}
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                border: "none",
+                display: "block",
+              }}
+            />
+          )}
         </div>
       </div>
 

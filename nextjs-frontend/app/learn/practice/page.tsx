@@ -51,6 +51,7 @@ export default function PracticePage() {
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
+  const [practiceResult, setPracticeResult] = useState<{ correctCount: number; totalCount: number } | null>(null);
 
   const loadStoredPracticeProgress = (): Record<string, { index: number; total: number; percent: number }> => {
     if (typeof window === "undefined") return {};
@@ -96,6 +97,21 @@ export default function PracticePage() {
       }
     };
     void load();
+  }, []);
+
+  useEffect(() => {
+    const refreshPractices = async () => {
+      setLoading(true);
+      try {
+        const data = await getLessons("practice");
+        setPractices(data);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    window.addEventListener("admin-content-created", refreshPractices);
+    return () => window.removeEventListener("admin-content-created", refreshPractices);
   }, []);
 
   const practiceStyles = [
@@ -160,6 +176,15 @@ export default function PracticePage() {
     });
   }, [selectedPractice, questionIndex, questions.length]);
 
+  useEffect(() => {
+    if (!practiceResult) return;
+    const timer = setTimeout(() => {
+      setPracticeResult(null);
+      setSelectedPractice(null);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [practiceResult]);
+
   const goPrev = () => {
     if (questionIndex === 0) return;
     const nextIndex = questionIndex - 1;
@@ -182,12 +207,21 @@ export default function PracticePage() {
 
     if (completedPracticeIds[selectedPractice._id]) {
       setStatusMessage(null);
+      setPracticeResult(null);
       setSelectedPractice(null);
       return;
     }
 
     setCompleting(true);
     try {
+      // Calculate correct answers
+      let correctCount = 0;
+      questions.forEach((question, index) => {
+        if (updatedAnswers[index] === question.correct) {
+          correctCount++;
+        }
+      });
+
       await completeLesson(selectedPractice._id);
       setCompletedPracticeIds((current) => ({ ...current, [selectedPractice._id]: true }));
       setPracticeProgressById((current) => {
@@ -200,7 +234,12 @@ export default function PracticePage() {
         return next;
       });
       setStatusMessage(null);
-      setSelectedPractice(null);
+      
+      // Show result instead of closing immediately
+      setPracticeResult({
+        correctCount,
+        totalCount: questions.length,
+      });
     } catch (nextError) {
       setStatusMessage(nextError instanceof Error ? nextError.message : "Failed to submit practice.");
     } finally {
@@ -212,17 +251,126 @@ export default function PracticePage() {
     <div style={{ maxWidth: selectedPractice ? 1220 : 1000, margin: "0 auto", padding: "20px 24px 40px" }}>
       {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading practices...</p> : null}
       {statusMessage ? (
-        <p style={{ ...signlearnoText, color: statusMessage.startsWith("Done!") ? theme.colors.green : theme.colors.red }}>
+        <p
+          style={{
+            ...signlearnoText,
+            color: statusMessage.startsWith("Done!") ? theme.colors.green : theme.colors.red,
+          }}
+        >
           {statusMessage}
         </p>
       ) : null}
 
-      {selectedPractice ? (
+      {practiceResult ? (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "60vh",
+            gap: 24,
+            marginTop: 24,
+          }}
+        >
+          <div
+            style={{
+              borderRadius: 30,
+              border: `2px solid ${theme.colors.border}`,
+              background: theme.colors.surface,
+              padding: 40,
+              textAlign: "center",
+              boxShadow: "0 24px 48px rgba(15, 23, 42, 0.08)",
+              maxWidth: 400,
+            }}
+          >
+            <div
+              style={{
+                ...signlearnoText,
+                fontSize: 48,
+                fontWeight: 800,
+                color: theme.colors.green,
+                marginBottom: 16,
+              }}
+            >
+              ✓
+            </div>
+            <div
+              style={{
+                ...signlearnoText,
+                fontSize: 24,
+                fontWeight: 800,
+                color: theme.colors.textStrong,
+                marginBottom: 24,
+              }}
+            >
+              Hoàn thành!
+            </div>
+            <div
+              style={{
+                ...signlearnoText,
+                fontSize: 18,
+                fontWeight: 700,
+                color: theme.colors.textMuted,
+                marginBottom: 32,
+              }}
+            >
+              Bạn trả lời đúng
+            </div>
+            <div
+              style={{
+                ...signlearnoText,
+                fontSize: 56,
+                fontWeight: 800,
+                color: theme.colors.green,
+                marginBottom: 8,
+              }}
+            >
+              {practiceResult.correctCount}/{practiceResult.totalCount}
+            </div>
+            <div
+              style={{
+                ...signlearnoText,
+                fontSize: 14,
+                fontWeight: 600,
+                color: theme.colors.textMuted,
+                marginBottom: 32,
+              }}
+            >
+              câu hỏi
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setPracticeResult(null);
+                setSelectedPractice(null);
+              }}
+              style={{
+                padding: "12px 32px",
+                borderRadius: 10,
+                border: "none",
+                borderBottom: `4px solid ${theme.colors.greenDark}`,
+                background: theme.colors.green,
+                cursor: "pointer",
+                fontWeight: 700,
+                fontSize: 15,
+                color: "#fff",
+                ...signlearnoText,
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      ) : selectedPractice ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 24, marginTop: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <button
               type="button"
-              onClick={() => setSelectedPractice(null)}
+              onClick={() => {
+                setPracticeResult(null);
+                setSelectedPractice(null);
+              }}
               style={{
                 padding: "8px 16px",
                 borderRadius: 10,

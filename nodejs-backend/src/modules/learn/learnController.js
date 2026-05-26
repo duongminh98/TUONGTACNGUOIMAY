@@ -2,6 +2,21 @@ const learnService = require('./learnService');
 const logger = require('../../logger');
 
 class LearnController {
+  async createLesson(req, res, next) {
+    try {
+      const lesson = await learnService.createLesson(req.body);
+
+      res.status(201).json({
+        success: true,
+        message: 'Lesson created successfully',
+        data: lesson,
+      });
+    } catch (error) {
+      logger.error('Create lesson controller error:', error.message);
+      next(error);
+    }
+  }
+
   async getAllLessons(req, res, next) {
     try {
       const { type } = req.query;

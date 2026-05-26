@@ -164,6 +164,30 @@ class AuthController {
       next(error);
     }
   }
+
+  async deleteUser(req, res, next) {
+    try {
+      const { userId } = req.params;
+
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: 'User id is required',
+        });
+      }
+
+      const deletedUser = await authService.deleteUserById(userId, req.userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'User deleted successfully',
+        data: deletedUser,
+      });
+    } catch (error) {
+      logger.error('Delete user controller error:', error.message);
+      next(error);
+    }
+  }
 }
 
 module.exports = new AuthController();

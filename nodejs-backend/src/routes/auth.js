@@ -50,4 +50,13 @@ router.get('/users', authMiddleware, adminMiddleware, (req, res, next) =>
   authController.getAllUsers(req, res, next)
 );
 
+/**
+ * @route   DELETE /api/auth/users/:userId
+ * @desc    Delete user by id (admin only)
+ * @access  Private Admin
+ */
+router.delete('/users/:userId', authMiddleware, adminMiddleware, (req, res, next) =>
+  authController.deleteUser(req, res, next)
+);
+
 module.exports = router;

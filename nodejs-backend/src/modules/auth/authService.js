@@ -221,6 +221,46 @@ class AuthService {
       throw error;
     }
   }
+
+  async deleteUserById(targetUserId, currentUserId) {
+    try {
+      if (!targetUserId) {
+        throw new Error('User id is required');
+      }
+
+      if (String(targetUserId) === String(currentUserId)) {
+        throw new Error('You cannot delete your own account');
+      }
+
+      const targetUser = await User.findById(targetUserId).select('-password');
+      if (!targetUser) {
+        throw new Error('User not found');
+      }
+
+      if (targetUser.role === 'admin') {
+        const remainingAdminCount = await User.countDocuments({
+          role: 'admin',
+          _id: { $ne: targetUser._id },
+        });
+
+        if (remainingAdminCount === 0) {
+          throw new Error('Cannot delete the last admin account');
+        }
+      }
+
+      await User.findByIdAndDelete(targetUserId);
+
+      return {
+        id: targetUser._id,
+        username: targetUser.username,
+        email: targetUser.email,
+        role: targetUser.role,
+      };
+    } catch (error) {
+      logger.error('Delete user error:', error.message);
+      throw error;
+    }
+  }
 }
 
 module.exports = new AuthService();

@@ -112,7 +112,7 @@ export function Header() {
 
   const navigation = useMemo(() => {
     if (role === "admin") {
-      return [...baseNavigation, { name: "User", href: "/users", icon: "users" }];
+      return [...baseNavigation, { name: "Users", href: "/users", icon: "users" }];
     }
 
     return baseNavigation;
@@ -175,7 +175,19 @@ export function Header() {
         setStreak(0);
       }
     };
+
+    const handleAuthChanged = () => {
+      void loadProfile();
+    };
+
     void loadProfile();
+    window.addEventListener("auth-state-changed", handleAuthChanged);
+    window.addEventListener("storage", handleAuthChanged);
+
+    return () => {
+      window.removeEventListener("auth-state-changed", handleAuthChanged);
+      window.removeEventListener("storage", handleAuthChanged);
+    };
   }, []);
 
   useEffect(() => {

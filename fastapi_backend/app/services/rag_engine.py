@@ -68,18 +68,7 @@ class RAGEngine:
             temperature=0.3
         )
         
-        # Initialize Vector Stores
-        self.asl_vectorstore = Chroma(
-            collection_name="asl_knowledge",
-            embedding_function=self.embeddings,
-            persist_directory=str(self.chroma_dir)
-        )
-        
-        self.project_vectorstore = Chroma(
-            collection_name="project_docs",
-            embedding_function=self.embeddings,
-            persist_directory=str(self.chroma_dir)
-        )
+        self._initialize_vectorstores()
         
         logger.info("RAGEngine initialized successfully.")
         
@@ -125,6 +114,46 @@ Quy tắc bắt buộc:
 [App Workflow Context - optional]:
 {context}
 """
+
+    def _initialize_vectorstores(self):
+        try:
+            self.asl_vectorstore = Chroma(
+                collection_name="asl_knowledge",
+                embedding_function=self.embeddings,
+                persist_directory=str(self.chroma_dir)
+            )
+
+            self.project_vectorstore = Chroma(
+                collection_name="project_docs",
+                embedding_function=self.embeddings,
+                persist_directory=str(self.chroma_dir)
+            )
+        except KeyError as exc:
+            if str(exc) != "'_type'":
+                raise
+
+            fallback_dir = self.chroma_dir.with_name(f"{self.chroma_dir.name}_v2")
+            logger.warning(
+                "Detected incompatible Chroma metadata schema in %s. "
+                "Switching to new Chroma directory %s and reinitializing collections.",
+                self.chroma_dir,
+                fallback_dir,
+            )
+
+            self.chroma_dir = fallback_dir
+            self.chroma_dir.mkdir(parents=True, exist_ok=True)
+
+            self.asl_vectorstore = Chroma(
+                collection_name="asl_knowledge",
+                embedding_function=self.embeddings,
+                persist_directory=str(self.chroma_dir)
+            )
+
+            self.project_vectorstore = Chroma(
+                collection_name="project_docs",
+                embedding_function=self.embeddings,
+                persist_directory=str(self.chroma_dir)
+            )
 
     def _normalize_for_match(self, value: str) -> str:
         lowered = value.lower()

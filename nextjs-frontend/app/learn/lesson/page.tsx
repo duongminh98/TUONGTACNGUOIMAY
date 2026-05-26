@@ -69,30 +69,41 @@ export default function LessonPage() {
     return () => window.clearTimeout(timer);
   }, [xpPopup]);
 
-  useEffect(() => {
-    const load = async () => {
+  const loadLessons = useCallback(async () => {
+    try {
+      const data = await getLessons("lesson");
+      setLessons(data);
       try {
-        const data = await getLessons("lesson");
-        setLessons(data);
-        try {
-          const histories = await getLearningHistory();
-          const completedMap: Record<string, boolean> = {};
-          histories.forEach((item) => {
-            const lessonId = typeof item.lessonId === "string" ? item.lessonId : item.lessonId._id;
-            if (lessonId) completedMap[lessonId] = true;
-          });
-          setCompletedLessonIds(completedMap);
-        } catch {
-          // ignore history in guest mode
-        }
-      } catch (nextError) {
-        setStatusMessage(nextError instanceof Error ? nextError.message : "Failed to load lessons.");
-      } finally {
-        setLoading(false);
+        const histories = await getLearningHistory();
+        const completedMap: Record<string, boolean> = {};
+        histories.forEach((item) => {
+          const lessonId = typeof item.lessonId === "string" ? item.lessonId : item.lessonId._id;
+          if (lessonId) completedMap[lessonId] = true;
+        });
+        setCompletedLessonIds(completedMap);
+      } catch {
+        // ignore history in guest mode
       }
-    };
-    void load();
+    } catch (nextError) {
+      setStatusMessage(nextError instanceof Error ? nextError.message : "Failed to load lessons.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void loadLessons();
+  }, [loadLessons]);
+
+  useEffect(() => {
+    const refreshLessons = () => {
+      setLoading(true);
+      void loadLessons();
+    };
+
+    window.addEventListener("admin-content-created", refreshLessons);
+    return () => window.removeEventListener("admin-content-created", refreshLessons);
+  }, [loadLessons]);
 
   const mapLessonToUnit = (lesson: Lesson): Unit => {
     const flashcards =
@@ -187,7 +198,12 @@ export default function LessonPage() {
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 24px 40px" }}>
       {loading ? <p style={{ ...signlearnoText, color: theme.colors.textMuted }}>Loading lessons...</p> : null}
       {statusMessage ? (
-        <p style={{ ...signlearnoText, color: statusMessage.startsWith("Completed") ? theme.colors.green : theme.colors.red }}>
+        <p
+          style={{
+            ...signlearnoText,
+            color: statusMessage.startsWith("Completed") ? theme.colors.green : theme.colors.red,
+          }}
+        >
           {statusMessage}
         </p>
       ) : null}

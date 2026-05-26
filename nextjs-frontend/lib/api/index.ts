@@ -5,6 +5,8 @@ export {
   addTranslatorWord,
   clearStoredToken,
   completeLesson,
+  createLesson,
+  deleteUser,
   getDictionaryEntries,
   getDashboard,
   getAlphabetSignVideos,
